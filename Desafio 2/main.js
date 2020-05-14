@@ -40,21 +40,35 @@ class Cell {
     // Replace class hidden with class revealed on the div element
 		this.element.classList.replace('hidden', 'revealed');
 		if (this.isBomb) {
+			//if a flag is on a bomb cell paints the cell green
+			if (this.isFlagged) this.element.style.backgroundColor = 'green';
 			this.element.classList.add('bomb');
 		} else {
 			this.element.innerText = this.value;
 			this.element.style.color = CellColors[this.value] || 'black';
 		}
 		this.visited = true;
+		setTimeout(4000);
 	}
 
-  // *************************************************************************************
-  // Here you need to implement toggleFlag function that depending on isFlagged variable
-  // will apply or remove the css class 'flag' from the this instantite element
-  // and will invert the flag
-  // (This function is called inside cellRightClick function that are in the Map class,
-  // you dont need to worry with that)
-  // *************************************************************************************
+	// *************************************************************************************
+	// Here you need to implement toggleFlag function that depending on isFlagged letiable
+	// will apply or remove the css class 'flag' from the this instantiate element
+	// and will invert the flag
+	// (This function is called inside cellRightClick function that is in the Map class,
+	// you dont need to worry about that)
+	// *************************************************************************************
+
+	toggleFlag() {
+		if (this.isFlagged) {
+			this.element.classList.remove('flag');
+			this.isFlagged = false;
+		} else {
+			this.element.classList.add('flag');
+			this.isFlagged = true;
+		}
+
+	}
 }
 
 class Map {
@@ -66,6 +80,7 @@ class Map {
 		this.hasMapBeenClickedYet = false;
 		this.isGameOver = false;
 		this.visibleCells = 0;
+		this.lives = location.search[7]; //gets the total lives from URL (query string)
 
 		for (let row = 0; row < height; row ++) {
 			this.cells.push([]);
@@ -176,9 +191,140 @@ class Map {
 				if (cell.isBomb && !cell.isFlagged) cell.reveal();
 			}
 		}
-		this.isGameOver = true;
+		let url = location.href;
+		
+		if (this.lives > 0) {
+			this.lives = this.lives - 1; //player lost 1 turn, update total lives
+			url = url.replace(`lives=${this.lives + 1}`, `lives=${this.lives}`); //update total lives at query string
+			alert(`Você perdeu. Vidas restantes = ${this.lives}`);
+
+			for (let row = 0; row < this.height; row ++) {
+				for (let column = 0; column < this.width; column ++) {
+					const cell = this.cells[row][column];
+					if (cell.isBomb && cell.isFlagged) cell.reveal();
+				}
+			}
+
+			setInterval(function() {window.location.href = url; }, 3000); //wait 3 seconds and restart the game
+		} else {
+			this.isGameOver = true;
+			alert('Fim do jogo!');
+		}
+		
 	}
 }
 
-// Instantiate a Map object
-new Map(document.getElementById('root'), 50, 30, 300);
+//properties like mode (easy, medium, hard, expert), number of lives, 
+//table width and height are passed through query string (URL)
+let sendQueryString = function(mode, lives, width, height) {
+	let url = document.location.href;
+	url = url.replace('index.html', 'game.html') + "?lives=" + lives + "&width=" + width + "&height=" + height + "&mode=" + mode;
+	window.location.href = url;
+}
+
+//gets URL of current page
+let url = document.location.href;
+
+//if current page is index.html
+if (url.includes('index.html')) {
+	document.getElementById('easy').addEventListener('click', () => {
+		let dimensions = document.querySelector('#dimensions').value;
+		
+		if (dimensions == 0) {
+			dimensions = []
+			//width and height standard values for easy mode (if dimensions' input is empty)
+			dimensions.push(25);
+			dimensions.push(20);
+		} else {
+			dimensions = dimensions.split(" ");
+		}
+		
+		sendQueryString('easy', 3, dimensions[0], dimensions[1]);
+	});
+
+	document.getElementById('medium').addEventListener('click', () => {
+		let dimensions = document.querySelector('#dimensions').value;
+		
+		if (dimensions == 0) {
+			dimensions = []
+			//width and height standard values for medium mode (if dimensions' input is empty)
+			dimensions.push(28);
+			dimensions.push(16);
+		} else {
+			dimensions = dimensions.split(" ");
+		}
+		sendQueryString('medium', 3, dimensions[0], dimensions[1]);
+	});
+
+	document.getElementById('hard').addEventListener('click', () => {
+		let dimensions = document.querySelector('#dimensions').value;
+		
+		if (dimensions == 0) {
+			dimensions = []
+			//width and height standard values for hard mode (if dimensions' input is empty)
+			dimensions.push(50);
+			dimensions.push(30);
+		} else {
+			dimensions = dimensions.split(" ");
+		}
+		sendQueryString('hard', 3, dimensions[0], dimensions[1]);
+	});
+
+	document.getElementById('expert').addEventListener('click', () => {
+		let dimensions = document.querySelector('#dimensions').value;
+		
+		if (dimensions == 0) {
+			dimensions = []
+			//width and height standard values for expert mode (if dimensions' input is empty)
+			dimensions.push(50);
+			dimensions.push(30);
+		} else {
+			dimensions = dimensions.split(" ");
+		}
+		sendQueryString('expert', 3, dimensions[0], dimensions[1]);
+	});
+}
+
+//if current page is game.html
+if (url.includes('game.html')) {
+	//updates life score at the top of the page
+	let lifeScoreElement = document.querySelector('#lifeScore');
+	lifeScoreElement.innerText = lifeScoreElement.innerText + ' ' + location.search[7];
+
+	//split query string parameters into an array
+	let params = location.search.split('&');
+	let mode = '', width, height, bombs;
+
+	for (let i = 0; i < params.length; i++) {
+		if (params[i].includes('width')) {
+			width = params[i].substring(params[i].indexOf('=') + 1);
+		} else if (params[i].includes('height')) {
+			height = params[i].substring(params[i].indexOf('=') + 1);
+		} else if (params[i].includes('mode')) {
+			mode = params[i].substring(params[i].indexOf('=') + 1);
+		}
+	}
+	
+	switch(mode) {
+		case 'easy':
+			bombs = Math.round(width*height / 10); //maintains the proportion of bombs for custom widths and heights
+			new Map(document.getElementById('root'), width, height, bombs);
+			break;
+
+		case 'medium':
+			bombs = Math.round(width*height / 7); //maintains the proportion of bombs for custom widths and heights
+			new Map(document.getElementById('root'), width, height, bombs);
+			break;
+
+		case 'hard':
+			bombs = Math.round(width*height / 5); //maintains the proportion of bombs for custom widths and heights
+			new Map(document.getElementById('root'), width, height, bombs);
+			break;
+
+		case 'expert':
+			bombs = Math.round(width*height / 3); //maintains the proportion of bombs for custom widths and heights
+			new Map(document.getElementById('root'), width, height, bombs);
+			break;
+	}
+	
+}

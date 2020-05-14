@@ -6,8 +6,25 @@
 	<link rel="stylesheet" href="style.css">
 	<title>Minesweeper</title>
 </head>
-<body>
-	<div id="root"></div>
-	<script src="main.js"></script>
+<body class="index">
+	<div class="container">
+        <h1>Minesweeper</h1>
+        <h2>Menu</h2>
+
+        <button class="levels" id="easy">Easy</button><br />
+        <button class="levels" id="medium">Medium</button><br />
+        <button class="levels" id="hard">Hard</button><br />
+        <button class="levels" id="expert">Expert</button>
+
+        <form>
+            <h3 class="custom">Para um tabuleiro personalizado, informe largura e altura desejadas (nesta ordem): </h2><br />
+            <input type="text" name="dimensions" id="dimensions" placeholder="Largura altura" />
+        </form>
+        
+    </div>
+
+    <div id="root"></div>
+
+    <script src="main.js"></script>
 </body>
 </html>

@@ -2,7 +2,59 @@ html, body {
 	height: 100%;
 	width: 100%;
 	margin: 0;
+	font-family: 'Arial', sans-serif;
 }
+
+/* Menu page */
+
+body.index {
+	background-color: cadetblue;
+}
+
+.container {
+	box-sizing: border-box;
+	color: white;
+	text-align: center;
+	max-width: 900px;
+	margin: 0 auto;
+	height: 70vh;
+	background-color: steelblue;
+	border-radius: 20px;
+}
+
+.container h1 {
+	padding: 10px 0;
+}
+
+button {
+	width: 100px;
+	font-size: 18px;
+	border-radius: 10px;
+	margin: 10px 0;
+	border: 0;
+	cursor: pointer;
+}
+
+button[type=submit] {
+	border-radius: 10px;
+}
+
+.custom {
+	padding-top: 20px;
+}
+
+input[type=text] {
+	padding: 5px;
+	width: 20vw;
+	border-radius: 10px;
+}
+
+input::placeholder {
+	color: black;
+}
+
+
+/* Game page */
 
 #root {
 	display: grid;
@@ -40,4 +92,10 @@ html, body {
 
 .revealed {
 	cursor: default;
+}
+
+#lifeScore {
+	text-align: center;
+	margin-top: 30px;
+	font-size: 18px;
 }
